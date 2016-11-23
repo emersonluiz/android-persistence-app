@@ -2,6 +2,7 @@ package br.com.emersonluiz.products;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected  void onResume() {
+    protected void onResume() {
         super.onResume();
         load();
     }
@@ -64,6 +65,15 @@ public class MainActivity extends AppCompatActivity {
 
         cursor.close();
 
-        listView.setAdapter(new ProductAdapter(list, this));
+        ProductAdapter productAdapter = new ProductAdapter(list, this, dao);
+        productAdapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                load();
+            }
+        });
+
+        listView.setAdapter(productAdapter);
     }
 }

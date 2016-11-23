@@ -2,6 +2,7 @@ package br.com.emersonluiz.products;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
@@ -25,10 +26,12 @@ public class ProductAdapter extends BaseAdapter {
 
     private final List<Map<String, Object>> products;
     private final AppCompatActivity activity;
+    private final ProductDAO dao;
 
-    ProductAdapter(List<Map<String, Object>> products, AppCompatActivity activity) {
+    ProductAdapter(List<Map<String, Object>> products, AppCompatActivity activity, ProductDAO dao) {
         this.products = products;
         this.activity = activity;
+        this.dao = dao;
     }
 
     @Override
@@ -47,7 +50,7 @@ public class ProductAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View view, ViewGroup viewGroup) {
+    public View getView(final int position, View view, ViewGroup viewGroup) {
 
         View v = activity.getLayoutInflater().inflate(R.layout.listview_item_row, viewGroup, false);
 
@@ -63,7 +66,18 @@ public class ProductAdapter extends BaseAdapter {
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SQLiteDatabase db = dao.getWritableDatabase();
+                db.delete("product", "_id = ?", new String[] {String.valueOf(id)});
                 Log.i("Remove", "Removing: " + String.valueOf(id));
+
+                for (int i=0; i<products.size(); i++) {
+                    if (products.get(i).containsValue(id)) {
+                        products.remove(i);
+                        break;
+                    }
+                }
+
+                notifyDataSetChanged();
             }
         });
 
